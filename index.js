@@ -11,20 +11,32 @@ app.use(express.json());
 app.get("/api/get", (req, res) => {
   db.query("SELECT * FROM USER", (err, result) => {
     if (err) {
-      console.log(err);
+      res.status(500).send({
+        success: false,
+        error: `Could not retrieve the users`,
+      });
     }
-    res.send(result);
+    res.send({
+      success: true,
+      result: result,
+    });
   });
 });
 
 // To get one USER
 app.get("/api/getFromEmail/:email", (req, res) => {
   const email = req.params.email;
-  db.query("SELECT * FROM EMAIL WHERE EMAIL_USER = ?", email, (err, result) => {
+  db.query("SELECT * FROM USER WHERE EMAIL_USER = ?", email, (err, result) => {
     if (err) {
-      console.log(err);
+      res.status(500).send({
+        success: false,
+        error: `Could not retrieve the user with the email ${email}`,
+      });
     }
-    res.send(result);
+    res.send({
+      success: true,
+      result: result,
+    });
   });
 });
 
@@ -37,9 +49,15 @@ app.post("/api/create", (req, res) => {
     [email, password, fname, lname],
     (err, result) => {
       if (err) {
-        console.log(err);
+        res.status(500).send({
+          success: false,
+          error: `User ${fname} ${lname} was not added`,
+        });
       }
-      console.log(result);
+      res.send({
+        success: true,
+        result: result,
+      });
     }
   );
 });
@@ -51,9 +69,15 @@ app.delete("/api/delete/:email", (req, res) => {
 
   db.query("DELETE FROM USER WHERE EMAIL_USER= ?", email, (err, result) => {
     if (err) {
-      console.log(err);
+      res.status(500).send({
+        success: false,
+        error: `Could not delete the user with email ${email}`,
+      });
     }
-    console.log(`User with email ${email} was deleted`);
+    res.send({
+      success: true,
+      result: result,
+    });
   });
 });
 
