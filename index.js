@@ -62,8 +62,29 @@ app.post("/api/create", (req, res) => {
   );
 });
 
-// To delete a USER
+// To update a USER
+app.post("/api/update/:email", (req, res) => {
+  const { email, password, fname, lname } = req.body;
 
+  db.query(
+    "UPDATE USER SET FNAME_USER = ?, LNAME_USER = ? WHERE EMAIL_USER = ? AND PASSWORD_USER = ?",
+    [fname, lname, email, password],
+    (err, result) => {
+      if (err) {
+        res.status(500).send({
+          success: false,
+          result: `Could not update the user with email: ${email}`,
+        });
+      }
+      res.send({
+        success: true,
+        result: result,
+      });
+    }
+  );
+});
+
+// To delete a USER
 app.delete("/api/delete/:email", (req, res) => {
   const email = req.params.email;
 
