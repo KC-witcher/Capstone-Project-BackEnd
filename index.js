@@ -40,6 +40,29 @@ app.get("/api/getFromEmail/:email", (req, res) => {
   });
 });
 
+// To log in
+app.post("/api/login", (req, res) => {
+  const email = req.params.email;
+  const password = req.params.password;
+
+  db.query("SELECT * FROM USER WHERE EMAIL_USER = ? AND PASSWORD_USER = ?", [email, password], (err, result) => {
+    if (err) {
+      res.status(500).send({
+        success: false,
+        error: `Could not retrieve the user with the email ${email} and thier password`,
+      });
+    }
+
+    if (result.length > 0) {
+      res.send({
+        success: true,
+        result: result,
+      });
+      }else({message: "Wrong username or password, please try again!"});
+  }
+  );
+});
+
 // For creating USER
 app.post("/api/create", (req, res) => {
   const { email, password, fname, lname } = req.body;
