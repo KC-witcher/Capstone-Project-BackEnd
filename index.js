@@ -42,24 +42,26 @@ app.get("/api/getFromEmail/:email", (req, res) => {
 
 // To log in
 app.post("/api/login", (req, res) => {
-  const email = req.params.email;
-  const password = req.params.password;
+  const { email, password } = req.body;
 
-  db.query("SELECT * FROM USER WHERE EMAIL_USER = ? AND PASSWORD_USER = ?", [email, password], (err, result) => {
-    if (err) {
-      res.status(500).send({
-        success: false,
-        error: `Could not retrieve the user with the email ${email} and thier password`,
-      });
+  db.query(
+    "SELECT * FROM USER WHERE EMAIL_USER = ? AND PASSWORD_USER = ?",
+    [email, password],
+    (err, result) => {
+      if (err) {
+        res.status(500).send({
+          success: false,
+          error: `Could not retrieve the user with the email ${email} and thier password`,
+        });
+      }
+
+      if (result.length > 0) {
+        res.send({
+          success: true,
+          result: result,
+        });
+      } else ({ message: "Wrong username or password, please try again!" });
     }
-
-    if (result.length > 0) {
-      res.send({
-        success: true,
-        result: result,
-      });
-      }else({message: "Wrong username or password, please try again!"});
-  }
   );
 });
 
@@ -87,7 +89,8 @@ app.post("/api/create", (req, res) => {
 
 // To update a USER
 app.post("/api/update/:email", (req, res) => {
-  const { email, password, fname, lname } = req.body;
+  const email = req.params.email;
+  const { password, fname, lname } = req.body;
 
   db.query(
     "UPDATE USER SET FNAME_USER = ?, LNAME_USER = ? WHERE EMAIL_USER = ? AND PASSWORD_USER = ?",
