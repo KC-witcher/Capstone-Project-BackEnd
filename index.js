@@ -81,32 +81,30 @@ app.get("/api/login", (req, res) => {
 app.post("/api/login", (req, res) => {
   const { email, password } = req.body;
 
-  db.query(
-    "SELECT * FROM USER WHERE EMAIL_USER = ?;",
-    email,
-    (err, result) => {
-      if (err) {
-        res.status(500).send({
-          success: false,
-          error: `Could not retrieve the user with the email ${email}`,
-        });
-      }
-
-      if (result.length > 0) {
-        bcrypt.compare(password, result[0].password, (error, response) => {
-          if (response) {
-            req.session.user = result;
-            console.log(req.session.user);
-            res.send(result);
-          } else {
-            res.send({ message: "Wrong username or password, please try again!" });
-          }
-        });
-      } else {
-        res.send({ message: "User doesn't exist" });
-      }
+  db.query("SELECT * FROM USER WHERE EMAIL_USER = ?;", email, (err, result) => {
+    if (err) {
+      res.status(500).send({
+        success: false,
+        error: `Could not retrieve the user with the email ${email}`,
+      });
     }
-);
+
+    if (result.length > 0) {
+      bcrypt.compare(password, result[0].password, (error, response) => {
+        if (response) {
+          req.session.user = result;
+          console.log(req.session.user);
+          res.send(result);
+        } else {
+          res.send({
+            message: "Wrong username or password, please try again!",
+          });
+        }
+      });
+    } else {
+      res.send({ message: "User doesn't exist" });
+    }
+  });
 });
 
 // For creating USER
@@ -118,27 +116,27 @@ app.post("/api/create", (req, res) => {
       console.log(err);
     }
 
-  db.query(
-    "INSERT INTO USER (EMAIL_USER, PASSWORD_USER, FNAME_USER, LNAME_USER) VALUES (?,?,?,?)",
-    [email, hash, fname, lname],
-    (err, result) => {
-      if (err) {
-        res.status(500).send({
-          success: false,
-          error: `User ${fname} ${lname} was not added`,
+    db.query(
+      "INSERT INTO USER (EMAIL_USER, PASSWORD_USER, FNAME_USER, LNAME_USER) VALUES (?,?,?,?)",
+      [email, hash, fname, lname],
+      (err, result) => {
+        if (err) {
+          res.status(500).send({
+            success: false,
+            error: `User ${fname} ${lname} was not added`,
+          });
+        }
+        res.send({
+          success: true,
+          result: result,
         });
       }
-      res.send({
-        success: true,
-        result: result,
-      });
-    }
-  );
-});
+    );
+  });
 });
 
 // To update a USER
-app.post("/api/update/:email", (req, res) => {
+app.put("/api/update/:email", (req, res) => {
   const email = req.params.email;
   const { password, fname, lname } = req.body;
 
