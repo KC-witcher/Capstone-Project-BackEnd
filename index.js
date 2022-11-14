@@ -89,8 +89,8 @@ app.post("/api/login", (req, res) => {
       });
     }
 
-    if (result.length > 0) {
-      bcrypt.compare(password, result[0].password, (error, response) => {
+    if (result.length) {
+      bcrypt.compare(password, result[0].PASSWORD_USER, (error, response) => {
         if (response) {
           req.session.user = result;
           console.log(req.session.user);
