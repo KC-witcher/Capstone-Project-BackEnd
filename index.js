@@ -138,11 +138,11 @@ app.post("/api/create", (req, res) => {
 // To update a USER
 app.put("/api/update/:email", (req, res) => {
   const { email } = req.params;
-  const { password, fname, lname } = req.body;
+  const { fname, lname } = req.body;
 
   db.query(
-    "UPDATE USER SET FNAME_USER = ?, LNAME_USER = ? WHERE EMAIL_USER = ? AND PASSWORD_USER = ?",
-    [fname, lname, email, password],
+    "UPDATE USER SET FNAME_USER = ?, LNAME_USER = ? WHERE EMAIL_USER = ?",
+    [fname, lname, email],
     (err, result) => {
       if (err) {
         res.status(500).send({
@@ -174,6 +174,99 @@ app.delete("/api/delete/:email", (req, res) => {
       result: result,
     });
   });
+});
+
+// To create a PROJECT
+app.post("/api/createProject", (req, res) => {
+  const {
+    type,
+    length,
+    priority,
+    budget,
+    value,
+    quality,
+    numOfPeople,
+    start,
+    end,
+    goal,
+    whenWork,
+    timeWork,
+    dayWork,
+    level,
+    id,
+  } = req.body;
+
+  db.query(
+    "INSERT INTO PROJECT (TYPE_PROJECT, LENGTH_PROJECT, PRIORITY_PROJECT, BUDGET_PROJECT, VALUE_PROJECT, QUALITY_PROJECT, NUMPEOPLE_PROJECT, START_PROJECT, END_PROJECT,  GOAL_PROJECT, WHENWORK_PROJECT, TIMEWORK_PROJECT, DAYWORK_PROJECT, LEVEL_PROJECT, ID_USER_FK) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+    [
+      type,
+      length,
+      priority,
+      budget,
+      value,
+      quality,
+      numOfPeople,
+      start,
+      end,
+      goal,
+      whenWork,
+      timeWork,
+      dayWork,
+      level,
+      id,
+    ],
+    (err, result) => {
+      if (err) {
+        console.log(err),
+          res.status(500).send({
+            success: false,
+            error: `Project ${type} was not added`,
+          });
+      }
+      res.send({
+        success: true,
+        result: result,
+      });
+    }
+  );
+});
+
+// To get all PROJECT
+app.get("/api/getProject", (req, res) => {
+  db.query("SELECT * FROM PROJECT", (err, result) => {
+    if (err) {
+      console.log(err),
+        res.status(500).send({
+          success: false,
+        });
+    }
+    res.send({
+      success: true,
+      result: result,
+    });
+  });
+});
+
+// To delete a PROJECT
+app.delete("/api/deleteProject/:id", (req, res) => {
+  const projectID = req.params.id;
+
+  db.query(
+    "DELETE FROM PROJECT WHERE ID_PROJECT= ?",
+    projectID,
+    (err, result) => {
+      if (err) {
+        res.status(500).send({
+          success: false,
+          error: `Could not delete the project`,
+        });
+      }
+      res.send({
+        success: true,
+        result: result,
+      });
+    }
+  );
 });
 
 app.listen(PORT, () => {
