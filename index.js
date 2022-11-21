@@ -14,8 +14,8 @@ app.use(express.json());
 
 app.use(
   cors({
-    origin: ["http://localhost:3002"],
-    methods: ["GET", "POST"],
+    origin: true,
+    methods: ["GET", "POST", "PUT"],
     credentials: true,
   })
 );
@@ -137,7 +137,7 @@ app.post("/api/create", (req, res) => {
 
 // To update a USER
 app.put("/api/update/:email", (req, res) => {
-  const email = req.params.email;
+  const { email } = req.params;
   const { password, fname, lname } = req.body;
 
   db.query(
