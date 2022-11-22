@@ -24,6 +24,7 @@ app.use(cookieParser());
 
 app.use(bodyParser.urlencoded({ extended: true }));
 
+// UserID is saved in session.
 app.use(
   session({
     key: "userID",
@@ -176,8 +177,11 @@ app.delete("/api/delete/:email", (req, res) => {
   });
 });
 
-// To create a PROJECT
+// To create a PROJECT for a given user.
 app.post("/api/createProject", (req, res) => {
+  // Get logged-in user id from here.
+  const user_id = session.key;
+
   const {
     type,
     length,
@@ -213,7 +217,7 @@ app.post("/api/createProject", (req, res) => {
       timeWork,
       dayWork,
       level,
-      id,
+      user_id,
     ],
     (err, result) => {
       if (err) {
@@ -231,9 +235,11 @@ app.post("/api/createProject", (req, res) => {
   );
 });
 
-// To get all PROJECT
+// To get all PROJECT of a given user.
 app.get("/api/getProject", (req, res) => {
-  db.query("SELECT * FROM PROJECT", (err, result) => {
+  const user_id = session.key;
+
+  db.query("SELECT * FROM PROJECT WHERE ID_USER_FK = ?", user_id, (err, result) => {
     if (err) {
       console.log(err),
         res.status(500).send({
@@ -247,18 +253,88 @@ app.get("/api/getProject", (req, res) => {
   });
 });
 
-// To delete a PROJECT
+// To delete a PROJECT with given user.
 app.delete("/api/deleteProject/:id", (req, res) => {
   const projectID = req.params.id;
+  const user_id = session.key;
 
   db.query(
-    "DELETE FROM PROJECT WHERE ID_PROJECT= ?",
+    "DELETE FROM PROJECT WHERE ID_PROJECT= ? AND ID_USER_FK = ?",
     projectID,
+    user_id,
     (err, result) => {
       if (err) {
         res.status(500).send({
           success: false,
           error: `Could not delete the project`,
+        });
+      }
+      res.send({
+        success: true,
+        result: result,
+      });
+    }
+  );
+});
+
+// Gets First Name and Last Name of user.
+app.get("/api/getNames", (req, res) => {
+  const user_id = session.key;
+
+  db.query("SELECT FNAME_USER, LNAME_USER FROM USER WHERE ID_USER = ?",
+    user_id,
+    (err, result) => {
+      if (err) {
+        res.status(500).send({
+          success: false,
+          error: `Could not get user's first name and last name.`,
+        });
+      }
+      res.send({
+        success: true,
+        result: result,
+      });
+    }
+  );
+});
+
+// Change first and last name of user
+app.post("/api/updateNames", (req, res) => {
+  const user_id = session.key;
+  const { fname, lname } = req.body;
+
+  db.query("UPDATE USER SET USER_FNAME = ?, USER_LNAME = ? WHERE USER_ID = ?",
+    fname,
+    lname,
+    user_id,
+    (err, result) => {
+      if (err) {
+        res.status(500).send({
+          success: false,
+          error: `Could not update user's first and last name.`,
+        });
+      }
+      res.send({
+        success: true,
+        result: result,
+      });
+    }
+  );
+});
+
+// For creating SCHEDULE
+app.post("/api/createSchedule", (req, res) => {
+  const proj_id = req.params.id;
+  const { accepted, schedule_string } = req.body;
+
+  db.query(
+    "INSERT INTO SCHEDULE (ACCEPTED_SCHEDULE, CALENDAR_SCHEDULE, ID_PROJECT) VALUES (?,?,?)",
+    [accepted, schedule_string, proj_id],
+    (err, result) => {
+      if (err) {
+        res.status(500).send({
+          success: false,
+          error: `User ${fname} ${lname} was not added`,
         });
       }
       res.send({
