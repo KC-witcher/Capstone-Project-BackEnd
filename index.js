@@ -299,6 +299,27 @@ app.get("/api/getNames", (req, res) => {
   );
 });
 
+// Gets First Name for home page.
+app.get("/api/homeName", (req, res) => {
+  const user_id = session.key;
+
+  db.query("SELECT FNAME_USER FROM USER WHERE ID_USER = ?",
+    user_id,
+    (err, result) => {
+      if (err) {
+        res.status(500).send({
+          success: false,
+          error: `Could not get user's first name.`,
+        });
+      }
+      res.send({
+        success: true,
+        result: result,
+      });
+    }
+  );
+});
+
 // Change first and last name of user
 app.post("/api/updateNames", (req, res) => {
   const user_id = session.key;
