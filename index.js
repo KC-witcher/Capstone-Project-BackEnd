@@ -244,6 +244,7 @@ app.get("/api/getProject", (req, res) => {
       console.log(err),
         res.status(500).send({
           success: false,
+          error: "Could not select projects for a given user."
         });
     }
     res.send({
@@ -334,7 +335,7 @@ app.post("/api/createSchedule", (req, res) => {
       if (err) {
         res.status(500).send({
           success: false,
-          error: `User ${fname} ${lname} was not added`,
+          error: `Schedule was not added.`,
         });
       }
       res.send({
