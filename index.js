@@ -197,7 +197,7 @@ app.post("/api/createProject", (req, res) => {
     timeWork,
     dayWork,
     level,
-    id,
+    user_id,
   } = req.body;
 
   db.query(
@@ -239,19 +239,23 @@ app.post("/api/createProject", (req, res) => {
 app.get("/api/getProject", (req, res) => {
   const user_id = session.key;
 
-  db.query("SELECT * FROM PROJECT WHERE ID_USER_FK = ?", user_id, (err, result) => {
-    if (err) {
-      console.log(err),
-        res.status(500).send({
-          success: false,
-          error: "Could not select projects for a given user."
-        });
+  db.query(
+    "SELECT * FROM PROJECT WHERE ID_USER_FK = ?",
+    user_id,
+    (err, result) => {
+      if (err) {
+        console.log(err),
+          res.status(500).send({
+            success: false,
+            error: "Could not select projects for a given user.",
+          });
+      }
+      res.send({
+        success: true,
+        result: result,
+      });
     }
-    res.send({
-      success: true,
-      result: result,
-    });
-  });
+  );
 });
 
 // To delete a PROJECT with given user.
@@ -282,7 +286,8 @@ app.delete("/api/deleteProject/:id", (req, res) => {
 app.get("/api/getNames", (req, res) => {
   const user_id = session.key;
 
-  db.query("SELECT FNAME_USER, LNAME_USER FROM USER WHERE ID_USER = ?",
+  db.query(
+    "SELECT FNAME_USER, LNAME_USER FROM USER WHERE ID_USER = ?",
     user_id,
     (err, result) => {
       if (err) {
@@ -303,7 +308,8 @@ app.get("/api/getNames", (req, res) => {
 app.get("/api/homeName", (req, res) => {
   const user_id = session.key;
 
-  db.query("SELECT FNAME_USER FROM USER WHERE ID_USER = ?",
+  db.query(
+    "SELECT FNAME_USER FROM USER WHERE ID_USER = ?",
     user_id,
     (err, result) => {
       if (err) {
@@ -325,7 +331,8 @@ app.post("/api/updateNames", (req, res) => {
   const user_id = session.key;
   const { fname, lname } = req.body;
 
-  db.query("UPDATE USER SET USER_FNAME = ?, USER_LNAME = ? WHERE USER_ID = ?",
+  db.query(
+    "UPDATE USER SET USER_FNAME = ?, USER_LNAME = ? WHERE USER_ID = ?",
     fname,
     lname,
     user_id,
