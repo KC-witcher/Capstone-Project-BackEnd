@@ -286,12 +286,14 @@ app.get("/api/getProject", (req, res) => {
           success: false,
           error: "Could not select projects for a given user.",
         });
+      }
+      res.send({
+        success: true,
+        result: result,
+      });
+
     }
-    res.send({
-      success: true,
-      result: result,
-    });
-  });
+  );
 });
 
 // To delete a PROJECT with given user.
