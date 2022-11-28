@@ -70,13 +70,13 @@ app.get("/api/getFromEmail/:email", (req, res) => {
   });
 });
 
-app.get("/api/login", (req, res) => {
-  if (req.session.user) {
-    res.send({ loggedIn: true, user: req.session.user });
-  } else {
-    res.send({ loggedIn: false });
-  }
-});
+// app.get("/api/login", (req, res) => {
+//   if (req.session.user) {
+//     res.send({ loggedIn: true, user: req.session.user });
+//   } else {
+//     res.send({ loggedIn: false });
+//   }
+// });
 
 // To log in
 app.post("/api/login", (req, res) => {
@@ -94,7 +94,6 @@ app.post("/api/login", (req, res) => {
       bcrypt.compare(password, result[0].PASSWORD_USER, (error, response) => {
         if (response) {
           req.session.user = result;
-          console.log(req.session.user);
           res.send(result);
         } else {
           res.send({
@@ -106,6 +105,27 @@ app.post("/api/login", (req, res) => {
       res.send({ message: "User doesn't exist" });
     }
   });
+});
+
+// Gets First Name and Last Name of user.
+app.get("/api/getNames/:id", (req, res) => {
+  const user_id = req.params.id;
+  db.query(
+    "SELECT FNAME_USER, LNAME_USER FROM USER WHERE ID_USER = ?",
+    user_id,
+    (err, result) => {
+      if (err) {
+        res.status(500).send({
+          success: false,
+          error: `Could not get user's first name and last name.`,
+        });
+      }
+      res.send({
+        success: true,
+        result: result,
+      });
+    }
+  );
 });
 
 // For creating USER
@@ -178,9 +198,9 @@ app.delete("/api/delete/:email", (req, res) => {
 });
 
 // To create a PROJECT for a given user.
-app.post("/api/createProject", (req, res) => {
+app.post("/api/createProject/:id", (req, res) => {
   // Get logged-in user id from here.
-  const user_id = session.key;
+  const user_id = req.params.id;
 
   const {
     type,
@@ -197,7 +217,6 @@ app.post("/api/createProject", (req, res) => {
     timeWork,
     dayWork,
     level,
-    user_id,
   } = req.body;
 
   db.query(
@@ -235,10 +254,10 @@ app.post("/api/createProject", (req, res) => {
   );
 });
 
-// To get all PROJECT of a given user.
-app.get("/api/getProject", (req, res) => {
-  const user_id = session.key;
-
+// To get a user's PROJECT of a given user.
+app.get("/api/getProject/:id", (req, res) => {
+  const user_id = req.params.id;
+  console.log(session.key);
   db.query(
     "SELECT * FROM PROJECT WHERE ID_USER_FK = ?",
     user_id,
@@ -254,6 +273,25 @@ app.get("/api/getProject", (req, res) => {
         success: true,
         result: result,
       });
+    }
+  );
+});
+
+// For development
+app.get("/api/getProject", (req, res) => {
+  db.query("SELECT * FROM PROJECT", (err, result) => {
+    if (err) {
+      console.log(err),
+        res.status(500).send({
+          success: false,
+          error: "Could not select projects for a given user.",
+        });
+      }
+      res.send({
+        success: true,
+        result: result,
+      });
+
     }
   );
 });
@@ -282,49 +320,27 @@ app.delete("/api/deleteProject/:id", (req, res) => {
   );
 });
 
-// Gets First Name and Last Name of user.
-app.get("/api/getNames", (req, res) => {
-  const user_id = session.key;
+// // Gets First Name for home page.
+// app.get("/api/homeName", (req, res) => {
+//   const user_id = session.key;
 
-  db.query(
-    "SELECT FNAME_USER, LNAME_USER FROM USER WHERE ID_USER = ?",
-    user_id,
-    (err, result) => {
-      if (err) {
-        res.status(500).send({
-          success: false,
-          error: `Could not get user's first name and last name.`,
-        });
-      }
-      res.send({
-        success: true,
-        result: result,
-      });
-    }
-  );
-});
-
-// Gets First Name for home page.
-app.get("/api/homeName", (req, res) => {
-  const user_id = session.key;
-
-  db.query(
-    "SELECT FNAME_USER FROM USER WHERE ID_USER = ?",
-    user_id,
-    (err, result) => {
-      if (err) {
-        res.status(500).send({
-          success: false,
-          error: `Could not get user's first name.`,
-        });
-      }
-      res.send({
-        success: true,
-        result: result,
-      });
-    }
-  );
-});
+//   db.query(
+//     "SELECT FNAME_USER FROM USER WHERE ID_USER = ?",
+//     user_id,
+//     (err, result) => {
+//       if (err) {
+//         res.status(500).send({
+//           success: false,
+//           error: `Could not get user's first name.`,
+//         });
+//       }
+//       res.send({
+//         success: true,
+//         result: result,
+//       });
+//     }
+//   );
+// });
 
 // Change first and last name of user
 app.post("/api/updateNames", (req, res) => {
@@ -352,7 +368,7 @@ app.post("/api/updateNames", (req, res) => {
 });
 
 // For creating SCHEDULE
-app.post("/api/createSchedule", (req, res) => {
+app.post("/api/createSchedule/:id", (req, res) => {
   const proj_id = req.params.id;
   const { accepted, schedule_string } = req.body;
 
