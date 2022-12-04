@@ -37,7 +37,7 @@ app.use(
   })
 );
 
-// To get all USER
+// To get all USER for Development
 app.get("/api/get", (req, res) => {
   db.query("SELECT * FROM USER", (err, result) => {
     if (err) {
@@ -53,14 +53,14 @@ app.get("/api/get", (req, res) => {
   });
 });
 
-// To get one USER
-app.get("/api/getFromEmail/:email", (req, res) => {
-  const email = req.params.email;
-  db.query("SELECT * FROM USER WHERE EMAIL_USER = ?", email, (err, result) => {
+// To get one USER with ID
+app.get("/api/getUser/:id", (req, res) => {
+  const id = req.params;
+  db.query("SELECT * FROM USER WHERE ID_USER = ?", id, (err, result) => {
     if (err) {
       res.status(500).send({
         success: false,
-        error: `Could not retrieve the user with the email ${email}`,
+        error: `Could not retrieve the user with the id ${id}`,
       });
     }
     res.send({
@@ -157,18 +157,18 @@ app.post("/api/create", (req, res) => {
 });
 
 // To update a USER
-app.put("/api/update/:email", (req, res) => {
-  const { email } = req.params;
+app.put("/api/update/:id", (req, res) => {
+  const { id } = req.params;
   const { fname, lname } = req.body;
 
   db.query(
-    "UPDATE USER SET FNAME_USER = ?, LNAME_USER = ? WHERE EMAIL_USER = ?",
-    [fname, lname, email],
+    "UPDATE USER SET FNAME_USER = ?, LNAME_USER = ? WHERE ID_USER = ?",
+    [fname, lname, id],
     (err, result) => {
       if (err) {
         res.status(500).send({
           success: false,
-          result: `Could not update the user with email: ${email}`,
+          result: `Could not update the user with id: ${id}`,
         });
       }
       res.send({
@@ -180,14 +180,14 @@ app.put("/api/update/:email", (req, res) => {
 });
 
 // To delete a USER
-app.delete("/api/delete/:email", (req, res) => {
-  const email = req.params.email;
+app.delete("/api/delete/:id", (req, res) => {
+  const id = req.params.id;
 
-  db.query("DELETE FROM USER WHERE EMAIL_USER= ?", email, (err, result) => {
+  db.query("DELETE FROM USER WHERE ID_USER= ?", id, (err, result) => {
     if (err) {
       res.status(500).send({
         success: false,
-        error: `Could not delete the user with email ${email}`,
+        error: `Could not delete the user with id ${id}`,
       });
     }
     res.send({
@@ -286,25 +286,23 @@ app.get("/api/getProject", (req, res) => {
           success: false,
           error: "Could not select projects for a given user.",
         });
-      }
-      res.send({
-        success: true,
-        result: result,
-      });
-
     }
-  );
+    res.send({
+      success: true,
+      result: result,
+    });
+  });
 });
 
 // To delete a PROJECT with given user.
-app.delete("/api/deleteProject/:id", (req, res) => {
+app.post("/api/deleteProject/:id", (req, res) => {
   const projectID = req.params.id;
-  const user_id = session.key;
+  // const user_id = session.key;
 
   db.query(
-    "DELETE FROM PROJECT WHERE ID_PROJECT= ? AND ID_USER_FK = ?",
+    "DELETE FROM PROJECT WHERE ID_PROJECT= ?",
     projectID,
-    user_id,
+
     (err, result) => {
       if (err) {
         res.status(500).send({
@@ -343,52 +341,52 @@ app.delete("/api/deleteProject/:id", (req, res) => {
 // });
 
 // Change first and last name of user
-app.post("/api/updateNames", (req, res) => {
-  const user_id = session.key;
-  const { fname, lname } = req.body;
+// app.post("/api/updateNames", (req, res) => {
+//   const user_id = session.key;
+//   const { fname, lname } = req.body;
 
-  db.query(
-    "UPDATE USER SET USER_FNAME = ?, USER_LNAME = ? WHERE USER_ID = ?",
-    fname,
-    lname,
-    user_id,
-    (err, result) => {
-      if (err) {
-        res.status(500).send({
-          success: false,
-          error: `Could not update user's first and last name.`,
-        });
-      }
-      res.send({
-        success: true,
-        result: result,
-      });
-    }
-  );
-});
+//   db.query(
+//     "UPDATE USER SET USER_FNAME = ?, USER_LNAME = ? WHERE USER_ID = ?",
+//     fname,
+//     lname,
+//     user_id,
+//     (err, result) => {
+//       if (err) {
+//         res.status(500).send({
+//           success: false,
+//           error: `Could not update user's first and last name.`,
+//         });
+//       }
+//       res.send({
+//         success: true,
+//         result: result,
+//       });
+//     }
+//   );
+// });
 
 // For creating SCHEDULE
-app.post("/api/createSchedule/:id", (req, res) => {
-  const proj_id = req.params.id;
-  const { accepted, schedule_string } = req.body;
+// app.post("/api/createSchedule/:id", (req, res) => {
+//   const proj_id = req.params.id;
+//   const { accepted, schedule_string } = req.body;
 
-  db.query(
-    "INSERT INTO SCHEDULE (ACCEPTED_SCHEDULE, CALENDAR_SCHEDULE, ID_PROJECT) VALUES (?,?,?)",
-    [accepted, schedule_string, proj_id],
-    (err, result) => {
-      if (err) {
-        res.status(500).send({
-          success: false,
-          error: `Schedule was not added.`,
-        });
-      }
-      res.send({
-        success: true,
-        result: result,
-      });
-    }
-  );
-});
+//   db.query(
+//     "INSERT INTO SCHEDULE (ACCEPTED_SCHEDULE, CALENDAR_SCHEDULE, ID_PROJECT) VALUES (?,?,?)",
+//     [accepted, schedule_string, proj_id],
+//     (err, result) => {
+//       if (err) {
+//         res.status(500).send({
+//           success: false,
+//           error: `Schedule was not added.`,
+//         });
+//       }
+//       res.send({
+//         success: true,
+//         result: result,
+//       });
+//     }
+//   );
+// });
 
 app.listen(PORT, () => {
   console.log(`Server is running on ${PORT}`);
